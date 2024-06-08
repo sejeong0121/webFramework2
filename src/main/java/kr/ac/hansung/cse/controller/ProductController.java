@@ -65,9 +65,16 @@ public class ProductController {
 
 
 	@PutMapping("/{id}")
-	public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductDto request) {
-
-
+	public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid
+	@RequestBody ProductDto request) {
+		Product existingProduct = productService.getProductById(id);
+		if (existingProduct == null) {
+			throw new NotFoundException(id);
+		}
+		existingProduct.setName(request.getName());
+		existingProduct.setPrice(request.getPrice());
+		productService.updateProduct(existingProduct);
+		return ResponseEntity.ok(existingProduct);
 	}
 
 	@DeleteMapping("/{id}")
@@ -85,11 +92,11 @@ public class ProductController {
 	@Getter
 	@Setter
 	static class ProductDto {
-		
+
         @NotNull(message = "name is required")
         @Size(message = "name must be equal to or lower than 300", min = 1, max = 300)
-        private String name;           
-        
+        private String name;
+
         @NotNull(message = "name is required")
 		@Min(value = 0, message = "price must be greater than or equal to 0")
         private Double price;
